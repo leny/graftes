@@ -6,13 +6,13 @@
  * started at 20/05/2016
  */
 
-import { GraphQLObjectType, GraphQLString, GraphQLSchema } from "graphql";
+import { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLList } from "graphql";
 import graphqlHTTP from "express-graphql";
 import express from "express";
 
-let oData, oUserType, oSchema;
+let aUsers, oUserType, oSchema;
 
-oData = require( "../data.json" );
+aUsers = require( "../users.json" );
 
 oUserType = new GraphQLObjectType( {
     "name": "User",
@@ -20,7 +20,13 @@ oUserType = new GraphQLObjectType( {
         "id": {
             "type": GraphQLString
         },
-        "name": {
+        "first_name": {
+            "type": GraphQLString
+        },
+        "last_name": {
+            "type": GraphQLString
+        },
+        "email": {
             "type": GraphQLString
         }
     }
@@ -30,6 +36,12 @@ oSchema = new GraphQLSchema( {
     "query": new GraphQLObjectType( {
         "name": "Query",
         "fields": {
+            "users": {
+                "type": new GraphQLList( oUserType ),
+                "resolve": () => {
+                    return aUsers;
+                }
+            },
             "user": {
                 "type": oUserType,
                 "args": {
@@ -38,7 +50,9 @@ oSchema = new GraphQLSchema( {
                     }
                 },
                 "resolve": ( _, oArgs ) => {
-                    return oData[ oArgs.id ];
+                    return aUsers.find( ( oUser ) => {
+                        return oUser.id === oArgs.id;
+                    } );
                 }
             }
         }
